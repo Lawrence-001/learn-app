@@ -63,12 +63,12 @@ export default function App() {
       <button onClick={()=>dispatch({type:'decrement',value:5})}>-</button> */}
       {/* todoList */}
       <input type="text" ref={todoRef} />
-      <button onClick={handleDispatch(true)}>+</button>
+      <button onClick={()=>handleDispatch(true)}>+</button>
       {todoState.map((todo) => (
         <div key={todo.id}>
           {todo.name}{" "}
           <button
-            onClick={handleDispatch(false, { id: todo.id, name: todo.name })}
+            onClick={()=>handleDispatch(false, { id: todo.id, name: todo.name })}
           >
             X
           </button>
