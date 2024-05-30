@@ -1,79 +1,124 @@
-import { forwardRef, useRef, useReducer } from "react";
-import Custom from "./Custom";
-import UseMemoHook from "./UseMemoHook";
-import UseCallbackHook from "./UseCallbackHook";
-import UseContextHook from "./UseContextHook";
-
-const reducer = (state, action) => {
-  switch (action.type) {
-    case "increment":
-      return { count: state.count + action.value };
-    case "decrement":
-      return { count: state.count - action.value };
-    default:
-      return state;
-  }
-};
-
-// todo = [{type:'add',name:"hello"}]
-const todoReducer = (state, action) => {
-  switch (action.type) {
-    case "add":
-      return [...state, { id: state.length + 1, name: action.payload.name }];
-    case "remove":
-      console.log("payload", action.payload);
-
-      return state.filter((todo) => todo.id !== action.payload.id);
-    default:
-      return state;
-  }
-};
+import { useState } from "react";
+import { Formik } from "formik";
 
 export default function App() {
-  const [state, dispatch] = useReducer(reducer, { count: 0 });
-  const [todoState, todoDispatch] = useReducer(todoReducer, []);
-  const todoRef = useRef();
-
-  const handleDispatch = (isAdd, payload = {}) => {
-    if (isAdd) {
-      const name = todoRef.current.value;
-      const disp = todoDispatch({ type: "add", payload: { name } });
-      todoRef.current.value = "";
-      return disp;
-    }
-    todoRef.current.value = payload.name;
-    return todoDispatch({
-      type: "remove",
-      payload,
-    });
-  };
-  // const inputRef = useRef();
-
   return (
     <div>
-      {/* <Custom label="Name" ref={inputRef} />
-      <button onClick={() => inputRef.current.focus()}>focus</button>
-      <UseMemoHook/>
-      <UseCallbackHook/>
-      <UseContextHook/> */}
-
-      {/* usereducer hook */}
-      {/* <h1>Count: {state.count}</h1>
-      <button onClick={()=>dispatch({type:'increment',value:10})}>+</button>
-      <button onClick={()=>dispatch({type:'decrement',value:5})}>-</button> */}
-      {/* todoList */}
-      <input type="text" ref={todoRef} />
-      <button onClick={()=>handleDispatch(true)}>+</button>
-      {todoState.map((todo) => (
-        <div key={todo.id}>
-          {todo.name}{" "}
-          <button
-            onClick={()=>handleDispatch(false, { id: todo.id, name: todo.name })}
-          >
-            X
-          </button>
-        </div>
-      ))}
+      <MyFormik />
     </div>
   );
 }
+
+function MyForm() {
+  const [inputs, setInputs] = useState({});
+  const [myCar, setMyCar] = useState("Volvo");
+
+  const handleChange = (event) => {
+    const name = event.target.name;
+    const value = event.target.value;
+    setInputs((values) => ({ ...values, [name]: value }));
+  };
+
+  const handleSelectChange = (event) => {
+    const car = event.target.value
+    setMyCar(car);
+   setInputs((values)=> ({...values,car}))
+  };
+
+  console.log(myCar);
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    alert(JSON.stringify(inputs));
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <label>
+        Enter your name:
+        <input
+          type="text"
+          name="username"
+          value={inputs.username || ""}
+          onChange={handleChange}
+        />
+      </label>
+      <label>
+        Enter your age:
+        <input
+          type="number"
+          name="age"
+          value={inputs.age || ""}
+          onChange={handleChange}
+        />
+      </label>
+      <select value={myCar} onChange={handleSelectChange}>
+        <option value="Ford">Ford</option>
+        <option value="Volvo">Volvo</option>
+        <option value="Fiat">Fiat</option>
+      </select>
+      <input type="submit" />
+    </form>
+  );
+}
+
+function MyFormik() {
+ return (
+  <div>
+    <h1>Anywhere in your app!</h1>
+    <Formik
+      initialValues={{ email: '', password: '' }}
+      validate={values => {
+        const errors = {};
+        if (!values.email) {
+          errors.email = 'Required';
+        } else if (
+          !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(values.email)
+        ) {
+          errors.email = 'Invalid email address';
+        }
+        return errors;
+      }}
+      onSubmit={(values, { setSubmitting }) => {
+        setTimeout(() => {
+          alert(JSON.stringify(values, null, 2));
+          setSubmitting(false);
+        }, 400);
+      }}
+    >
+      {({
+        values,
+        errors,
+        touched,
+        handleChange,
+        handleBlur,
+        handleSubmit,
+        isSubmitting,
+        /* and other goodies */
+      }) => (
+        <form onSubmit={handleSubmit}>
+          <input
+            type="email"
+            name="email"
+            onChange={handleChange}
+            onBlur={handleBlur}
+            value={values.email}
+          />
+          {errors.email && touched.email && errors.email}
+          <input
+            type="password"
+            name="password"
+            onChange={handleChange}
+            onBlur={handleBlur}
+            value={values.password}
+          />
+          {errors.password && touched.password && errors.password}
+          <button type="submit" disabled={isSubmitting}>
+            Submit
+          </button>
+        </form>
+      )}
+    </Formik>
+  </div>
+ )
+}
+
